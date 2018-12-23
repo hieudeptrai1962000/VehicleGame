@@ -1,16 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <fstream>
+#include <sstream>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-// Variable to hold the program and vertex array object
+using namespace std;
+
+// Variable to hold the program
 GLuint program;
+
+// Variable to hold the array buffer object for the vertices
+GLuint VBO;
+
+float vertices[] = {
+    -0.5f, -0.5f, 0.0f,
+    0.5f, -0.5f, 0.0f,
+    0.0f,  0.5f, 0.0f
+};
 
 // Set the background colour
 static const GLfloat bg[] = {0.3f, 0.1f, 0.0f, 1.0f};
 
-// Method to handle GLFW error callbacks
+// Function to handle GLFW error callbacks
 void error_callback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
@@ -25,11 +38,35 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 }
 
+// Load shader and return string
+string loadFile(string fName) {
+
+    // Create an input file stream to load shaders
+    std::ifstream inFile;
+
+    // Open the file
+    inFile.open(fName, ios::in);
+
+    // Check if the file failed to load
+    if(!inFile) {
+        fprintf(stderr, "%s not found...\n", fName.c_str());
+        exit(1);
+    }
+
+    // Buffer the string as a string stream
+    std::stringstream buffer;
+    buffer << inFile.rdbuf();
+
+    // Return the string
+    return buffer.str();
+
+}
+
 int main(int argc, const char * argv[]) {
     
     // Check whether GLFW initialises successfully
     if(!glfwInit()) {
-        fprintf(stderr, "Error loading GLFW...");
+        fprintf(stderr, "Error loading GLFW...\n");
         return 1;
     }
 
@@ -37,8 +74,8 @@ int main(int argc, const char * argv[]) {
     glfwSetErrorCallback(error_callback);
 
     // Use open GL 4.1 core min
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
     // Set forward compatability
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -50,11 +87,11 @@ int main(int argc, const char * argv[]) {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     // Create a window and a GL context
-    GLFWwindow* window = glfwCreateWindow(800, 6000, "Vehicle Game", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Vehicle Game", NULL, NULL);
 
     // Check if the window failed to instantiate
     if(!window) {
-        fprintf(stderr, "Failed to create GLFW window...");
+        fprintf(stderr, "Failed to create GLFW window...\n");
         glfwTerminate();
         return 1;
     }
@@ -68,6 +105,77 @@ int main(int argc, const char * argv[]) {
     // Initialise GLEW
     glewExperimental = GL_TRUE;
     glewInit();
+
+    // Set the viewport width and height
+    glViewport(0, 0, 800, 600);
+
+    // Create the vertex buffer object and bind this as the active GL buffer
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    // Buffer the vertex information in the vertex buffer object
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // Load the shader text
+    const char *vertexData = loadFile("shaders/vertex.glsl").c_str();
+    const char *fragData = loadFile("shaders/fragment.glsl").c_str();
+
+    // Create the shaders
+    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+
+    // Set the source and destination of object for the shader then compile
+    glShaderSource(vs, 1, &vertexData, NULL);
+    glCompileShader(vs);
+
+    // Check for compile errors
+    int success;
+    glGetShaderiv(vs, GL_COMPILE_STATUS, &success);
+
+    // If there is an error, log
+    if(!success) {
+        char error[512];
+        glGetShaderInfoLog(vs, 512, NULL, error);
+        fprintf(stderr, "Error compiling vertex shader: \n%s\nUsing default shader...\n", error);
+    }
+
+    // Set the source and destination of object for the shader then compile
+    glShaderSource(fs, 1, &fragData, NULL);
+    glCompileShader(fs);
+
+    // Check for compile errors
+    glGetShaderiv(fs, GL_COMPILE_STATUS, &success);
+
+    // If there is an error, log
+    if(!success) {
+        char error[512];
+        glGetShaderInfoLog(fs, 512, NULL, error);
+        fprintf(stderr, "Error compiling fragment shader: \n%s\nUsing default shader...\n", error);
+    }
+
+    // Create the program to handle the shaders
+    GLuint program;
+    program = glCreateProgram();
+
+    // Attach the shaders
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+
+    // Link the program
+    glLinkProgram(program);
+
+    // Check for success of linking
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+
+    // If there is an error, log
+    if(!success) {
+        char error[512];
+        glGetProgramInfoLog(program, 512, NULL, error);
+        fprintf(stderr, "Error linking shader program: \n%s", error);
+    }
+
+    // Set open GL to use the shaders
+    glUseProgram(program);
 
     // Create the game loop to run until the window close button is clicked
     while(!glfwWindowShouldClose(window)) {
@@ -86,6 +194,10 @@ int main(int argc, const char * argv[]) {
 
     }
 
+    // Destroy the shaders
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
     // Destroy the program
     glDeleteProgram(program);
 
@@ -95,7 +207,7 @@ int main(int argc, const char * argv[]) {
     // Terminate GLFW
     glfwTerminate();
 
-    fprintf(stdout, "Successfully loaded GLFW...");
+    fprintf(stdout, "Program terminated successfully...\n");
     return 0;
 
 }
