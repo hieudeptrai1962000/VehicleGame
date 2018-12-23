@@ -11,8 +11,9 @@ using namespace std;
 // Variable to hold the program
 GLuint program;
 
-// Variable to hold the array buffer object for the vertices
+// Variable to hold the buffer and array objects for the vertices
 GLuint VBO;
+GLuint VAO;
 
 float vertices[] = {
     -0.5f, -0.5f, 0.0f,
@@ -21,7 +22,7 @@ float vertices[] = {
 };
 
 // Set the background colour
-static const GLfloat bg[] = {0.3f, 0.1f, 0.0f, 1.0f};
+static const GLfloat bg[] = {0.2f, 0.3f, 0.3f, 1.0f};
 
 // Function to handle GLFW error callbacks
 void error_callback(int error, const char* description) {
@@ -109,16 +110,27 @@ int main(int argc, const char * argv[]) {
     // Set the viewport width and height
     glViewport(0, 0, 800, 600);
 
-    // Create the vertex buffer object and bind this as the active GL buffer
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    // Buffer the vertex information in the vertex buffer object
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    const char *vertexData = "#version 330 core\n"
+    "layout (location = 0) in vec3 aPos;\n"
+    "void main()\n"
+    "{\n"
+    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "}\0";
+const char *fragData = "#version 330 core\n"
+    "out vec4 FragColor;\n"
+    "void main()\n"
+    "{\n"
+    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "}\n\0";
 
     // Load the shader text
-    const char *vertexData = loadFile("shaders/vertex.glsl").c_str();
-    const char *fragData = loadFile("shaders/fragment.glsl").c_str();
+    //const char *vertexData = loadFile("shaders/vertex.glsl").c_str();
+    //const char *fragData = loadFile("shaders/fragment.glsl").c_str();
+
+    // fprintf(stdout, "%s\n", vertexShaderSource);
+    // fprintf(stdout, "%s\n", vertexData);
+    // fprintf(stdout, "%s\n", fragmentShaderSource);
+    // fprintf(stdout, "%s\n", fragData);
 
     // Create the shaders
     GLuint vs = glCreateShader(GL_VERTEX_SHADER);
@@ -177,11 +189,37 @@ int main(int argc, const char * argv[]) {
     // Set open GL to use the shaders
     glUseProgram(program);
 
-    // Create the game loop to run until the window close button is clicked
+    // Create a VAO to hold information about the render object for the VBO data
+    glGenVertexArrays(1, &VAO);
+
+    // Bind to the vertex array
+    glBindVertexArray(VAO);
+
+    // Create the vertex buffer object and bind this as the active GL buffer
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    // Buffer the vertex information in the vertex buffer object
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // Setup the step data for the VBO to access x,y,z of each vertex
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Create the game loop to run until the window close button or esc is clicked
     while(!glfwWindowShouldClose(window)) {
 
         // Clear to background colour
         glClearBufferfv(GL_COLOR, 0, bg);
+
+        // Select the shader configuration
+        glUseProgram(program);
+
+        // Bind to the VAO
+        glBindVertexArray(VAO);
+
+        // Draw the triangle
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         // Swap the buffer to render
         glfwSwapBuffers(window);
@@ -197,6 +235,10 @@ int main(int argc, const char * argv[]) {
     // Destroy the shaders
     glDeleteShader(vs);
     glDeleteShader(fs);
+
+    // Destroy vertex objects
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
 
     // Destroy the program
     glDeleteProgram(program);
