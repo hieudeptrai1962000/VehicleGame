@@ -6,6 +6,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 using namespace std;
 
 // Variable to hold the program
@@ -14,11 +17,23 @@ GLuint program;
 // Variable to hold the buffer and array objects for the vertices
 GLuint VBO;
 GLuint VAO;
+GLuint EBO;
 
 float vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    0.0f,  0.5f, 0.0f
+     0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+    -0.5f,  0.5f, 0.0f, 0.0f, 1.0f
+};
+unsigned int indices[] = {
+    0, 1, 3,
+    1, 2, 3
+};
+
+float texCoords[] = {
+    0.0f, 0.0f,
+    1.0f, 1.0f,
+    0.5f, 1.0f
 };
 
 // Set the background colour
@@ -107,9 +122,6 @@ int main(int argc, const char * argv[]) {
     glewExperimental = GL_TRUE;
     glewInit();
 
-    // Set the viewport width and height
-    glViewport(0, 0, 800, 600);
-
     // Load the vertex shader from file
     const char *vertexData = loadFile("shaders/vertex.glsl").c_str();
 
@@ -169,12 +181,42 @@ int main(int argc, const char * argv[]) {
         glGetProgramInfoLog(program, 512, NULL, error);
         fprintf(stderr, "Error linking shader program: \n%s", error);
     }
+    
 
     // Set open GL to use the shaders
     glUseProgram(program);
 
+    // Load the container texture data
+    int width, height, nrChannels;
+    unsigned char* texData = stbi_load("assets/container.jpg", &width, &height, &nrChannels, 0);
+
+    // Check that the image data loaded successfully
+    if (texData) {
+
+        // Create the texture object
+        GLuint containerTex;
+        glGenTextures(1, &containerTex);
+
+        // Bind container tex as the currently active texture
+        glBindTexture(GL_TEXTURE_2D, containerTex);
+
+        // Generate the texture and mipmap
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        // Free the image data
+        stbi_image_free(texData);
+
+    }
+    else {
+        fprintf(stderr, "Failed to load texture...");
+    }
+
     // Create a VAO to hold information about the render object for the VBO data
     glGenVertexArrays(1, &VAO);
+
+    // Create an element buffer
+    glGenBuffers(1, &EBO);
 
     // Bind to the vertex array
     glBindVertexArray(VAO);
@@ -186,9 +228,17 @@ int main(int argc, const char * argv[]) {
     // Buffer the vertex information in the vertex buffer object
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    // Create the Element Buffer object
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     // Setup the step data for the VBO to access x,y,z of each vertex
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    // Setup the step data for the VBO to access tex coords of each vertex
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // Create the game loop to run until the window close button or esc is clicked
     while(!glfwWindowShouldClose(window)) {
@@ -199,11 +249,8 @@ int main(int argc, const char * argv[]) {
         // Select the shader configuration
         glUseProgram(program);
 
-        // Bind to the VAO
-        glBindVertexArray(VAO);
-
         // Draw the triangle
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // Swap the buffer to render
         glfwSwapBuffers(window);
