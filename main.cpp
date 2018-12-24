@@ -59,7 +59,7 @@ string loadFile(string fName) {
     buffer << inFile.rdbuf();
 
     // Return the string
-    return buffer.str();
+    return buffer.str()+"\0";
 
 }
 
@@ -110,27 +110,8 @@ int main(int argc, const char * argv[]) {
     // Set the viewport width and height
     glViewport(0, 0, 800, 600);
 
-    const char *vertexData = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-const char *fragData = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n\0";
-
-    // Load the shader text
-    //const char *vertexData = loadFile("shaders/vertex.glsl").c_str();
-    //const char *fragData = loadFile("shaders/fragment.glsl").c_str();
-
-    // fprintf(stdout, "%s\n", vertexShaderSource);
-    // fprintf(stdout, "%s\n", vertexData);
-    // fprintf(stdout, "%s\n", fragmentShaderSource);
-    // fprintf(stdout, "%s\n", fragData);
+    // Load the vertex shader from file
+    const char *vertexData = loadFile("shaders/vertex.glsl").c_str();
 
     // Create the shaders
     GLuint vs = glCreateShader(GL_VERTEX_SHADER);
@@ -150,6 +131,9 @@ const char *fragData = "#version 330 core\n"
         glGetShaderInfoLog(vs, 512, NULL, error);
         fprintf(stderr, "Error compiling vertex shader: \n%s\nUsing default shader...\n", error);
     }
+
+    // Load the frag shader from file
+    const char *fragData = loadFile("shaders/fragment.glsl").c_str();
 
     // Set the source and destination of object for the shader then compile
     glShaderSource(fs, 1, &fragData, NULL);
