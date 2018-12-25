@@ -19,6 +19,8 @@
         "cwchar": "cpp",
         "cwctype": "cpp",
         "streambuf": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "__bit_reference": "cpp",
+        "algorithm": "cpp"
     }
 }

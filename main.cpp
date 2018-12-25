@@ -6,6 +6,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -240,6 +244,17 @@ int main(int argc, const char * argv[]) {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    // Create a translation vector
+    glm::mat4 trans;
+
+    // Rotate and scale the vector
+    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    //trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+
+    // Set trans to link to the uniform translation vector in the vertex shader
+    GLuint transLoc = glGetUniformLocation(program, "transform");
+    glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
     // Create the game loop to run until the window close button or esc is clicked
     while(!glfwWindowShouldClose(window)) {
 
@@ -251,6 +266,9 @@ int main(int argc, const char * argv[]) {
 
         // Draw the triangle
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        trans = glm::rotate(trans, (GLfloat)glfwGetTime() / 500.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+        glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
         // Swap the buffer to render
         glfwSwapBuffers(window);
