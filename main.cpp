@@ -21,11 +21,11 @@ using namespace std;
 GLuint program;
 
 // Variable to hold the buffer and array objects for the vertices
-GLuint VBO;
-GLuint VAO;
-GLuint EBO;
+GLuint pVBO;
+GLuint pVAO;
+GLuint pEBO;
 
-float vertices[] = {
+float planeVertices[] = {
      0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
      0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
     -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
@@ -60,9 +60,83 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 }
 
+// Method to generate the world plane
+void worldPlane() {
+
+    // Create a VAO to hold information about the render object for the VBO data
+    glGenVertexArrays(1, &pVAO);
+
+    // Create an element buffer
+    glGenBuffers(1, &pEBO);
+
+    // Bind to the vertex array
+    glBindVertexArray(pVAO);
+
+    // Create the vertex buffer object and bind this as the active GL buffer
+    glGenBuffers(1, &pVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, pVBO);
+
+    // Buffer the vertex information in the vertex buffer object
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+
+    // Create the Element Buffer object
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // Setup the step data for the VBO to access x,y,z of each vertex
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Setup the step data for the VBO to access tex coords of each vertex
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // Debind the buffers
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+}
+
+// Method to generate and bind a texture
+void genTexture(GLuint tex, GLenum texLoc, Shader s, const GLchar* sLocation) {
+
+    // Load the texture data
+    int width, height, nrChannels;
+    unsigned char* texData = stbi_load(sLocation, &width, &height, &nrChannels, 0);
+
+    // Check that the image data loaded successfully
+    if (texData) {
+
+        // Create the texture object
+        glGenTextures(1, &tex);
+
+        // Use the shader
+        s.use();
+
+        // Set the active texture
+        glActiveTexture(texLoc);
+
+        // Bind track tex as the currently active texture
+        glBindTexture(GL_TEXTURE_2D, tex);
+
+        // Generate the texture and mipmap
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        // Free the image data
+        stbi_image_free(texData);
+
+    }
+    else {
+        fprintf(stderr, "Failed to load texture...");
+    }
+
+}
+
 int main(int argc, const char * argv[]) {
     
-    // Check whether GLFW initialises successfully
+    // Check whether GLFW initialised successfully
     if(!glfwInit()) {
         fprintf(stderr, "Error loading GLFW...\n");
         return 1;
@@ -107,62 +181,20 @@ int main(int argc, const char * argv[]) {
     // Load the shaders
     Shader s("shaders/vertex.glsl", "shaders/fragment.glsl");
 
-    // Load the container texture data
-    int width, height, nrChannels;
-    unsigned char* texData = stbi_load("assets/container.jpg", &width, &height, &nrChannels, 0);
+    // Variables to hold the textures
+    GLuint trackTex;
+    GLuint carTex;
 
-    // Check that the image data loaded successfully
-    if (texData) {
+    // Generate the textures
+    genTexture(trackTex, GL_TEXTURE0,  s, "assets/track.jpg");
+    genTexture(trackTex, GL_TEXTURE1,  s, "assets/car.jpg");
 
-        // Create the texture object
-        GLuint containerTex;
-        glGenTextures(1, &containerTex);
+    // Set the textures in the shader program
+    s.setInt("trackTex", 0);
+    s.setInt("carTex", 1);
 
-        // Use the shader
-        s.use();
-
-        // Bind container tex as the currently active texture
-        glBindTexture(GL_TEXTURE_2D, containerTex);
-
-        // Generate the texture and mipmap
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        // Free the image data
-        stbi_image_free(texData);
-
-    }
-    else {
-        fprintf(stderr, "Failed to load texture...");
-    }
-
-    // Create a VAO to hold information about the render object for the VBO data
-    glGenVertexArrays(1, &VAO);
-
-    // Create an element buffer
-    glGenBuffers(1, &EBO);
-
-    // Bind to the vertex array
-    glBindVertexArray(VAO);
-
-    // Create the vertex buffer object and bind this as the active GL buffer
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    // Buffer the vertex information in the vertex buffer object
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Create the Element Buffer object
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // Setup the step data for the VBO to access x,y,z of each vertex
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Setup the step data for the VBO to access tex coords of each vertex
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
+    // Generate the world plane
+    worldPlane();
 
     // Create the model matrix
     glm::mat4 modelMatrix;
@@ -170,7 +202,7 @@ int main(int argc, const char * argv[]) {
 
     // Create the view matrix
     glm::mat4 viewMatrix;
-    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -3.0f));
+    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -1.0f));
 
     // Create the projection matrix to use a perspective camera
     glm::mat4 projectionMatrix;
@@ -192,8 +224,14 @@ int main(int argc, const char * argv[]) {
         // Clear to background colour
         glClearBufferfv(GL_COLOR, 0, bg);
 
+        // Bind to the buffer to draw the plane
+        //glBindVertexArray(pVAO);
+
         // Draw the triangle
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        // Debind the buffer
+        glBindVertexArray(0);
 
         // Swap the buffer to render
         glfwSwapBuffers(window);
@@ -207,8 +245,9 @@ int main(int argc, const char * argv[]) {
     }
 
     // Destroy vertex objects
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(1, &pVAO);
+    glDeleteBuffers(1, &pVBO);
+    glDeleteBuffers(1, &pEBO);
 
     // Destroy the program
     glDeleteProgram(program);
