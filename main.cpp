@@ -93,7 +93,7 @@ int main(int argc, const char * argv[]) {
     // Set the error callback handler
     glfwSetErrorCallback(error_callback);
 
-    // Use open GL 4.1 core min
+    // Use open GL 3.3 core min
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
@@ -185,7 +185,6 @@ int main(int argc, const char * argv[]) {
         glGetProgramInfoLog(program, 512, NULL, error);
         fprintf(stderr, "Error linking shader program: \n%s", error);
     }
-    
 
     // Set open GL to use the shaders
     glUseProgram(program);
@@ -244,31 +243,36 @@ int main(int argc, const char * argv[]) {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    // Create a translation vector
-    glm::mat4 trans;
+    // Create the model matrix
+    glm::mat4 modelMatrix;
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-    // Rotate and scale the vector
-    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    //trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+    // Create the view matrix
+    glm::mat4 viewMatrix;
+    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -3.0f));
 
-    // Set trans to link to the uniform translation vector in the vertex shader
-    GLuint transLoc = glGetUniformLocation(program, "transform");
-    glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(trans));
+    // Create the projection matrix to use a perspective camera
+    glm::mat4 projectionMatrix;
+    projectionMatrix = glm::perspective(glm::radians(45.0f), (float)800/600, 0.1f, 100.0f);
+
+    // Create the pointers to the uniform floats in the vertex shader
+    GLuint modelLoc = glGetUniformLocation(program, "model");
+    GLuint viewLoc = glGetUniformLocation(program, "view");
+    GLuint projectionLoc = glGetUniformLocation(program, "projection");
 
     // Create the game loop to run until the window close button or esc is clicked
     while(!glfwWindowShouldClose(window)) {
 
+        // Pass the data for the model, view and projection matrix to the shader
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
         // Clear to background colour
         glClearBufferfv(GL_COLOR, 0, bg);
 
-        // Select the shader configuration
-        glUseProgram(program);
-
         // Draw the triangle
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        trans = glm::rotate(trans, (GLfloat)glfwGetTime() / 500.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-        glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
         // Swap the buffer to render
         glfwSwapBuffers(window);
