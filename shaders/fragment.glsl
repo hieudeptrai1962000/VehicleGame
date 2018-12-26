@@ -8,5 +8,5 @@ uniform sampler2D carTex;
 
 void main()
 {
-    FragColor = texture(carTex, TexCoord);
+    FragColor = texture(trackTex, TexCoord);
 }

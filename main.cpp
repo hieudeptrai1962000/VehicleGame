@@ -42,6 +42,17 @@ float texCoords[] = {
     0.5f, 1.0f
 };
 
+// Create an array of booleans to store key presses
+bool keys[] = {
+    false,
+    false,
+    false,
+    false
+};
+
+// Set the camera speed
+float camSpeed = 0.0001;
+
 // Set the background colour
 static const GLfloat bg[] = {0.2f, 0.3f, 0.3f, 1.0f};
 
@@ -56,6 +67,32 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     // Check for escape key press
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+
+    // Check for arrow key press
+    if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
+        keys[0] = true;
+    }
+    if (key == GLFW_KEY_UP && action == GLFW_RELEASE) {
+        keys[0] = false;
+    }
+    if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+        keys[1] = true;
+    }
+    if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE) {
+        keys[1] = false;
+    }
+    if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+        keys[2] = true;
+    }
+    if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE) {
+        keys[2] = false;
+    }
+    if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+        keys[3] = true;
+    }
+    if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE) {
+        keys[3] = false;
     }
 
 }
@@ -196,10 +233,6 @@ int main(int argc, const char * argv[]) {
     // Generate the world plane
     worldPlane();
 
-    // Create the model matrix
-    glm::mat4 modelMatrix;
-    modelMatrix = glm::rotate(modelMatrix, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
     // Create the view matrix
     glm::mat4 viewMatrix;
     viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -1.0f));
@@ -208,24 +241,50 @@ int main(int argc, const char * argv[]) {
     glm::mat4 projectionMatrix;
     projectionMatrix = glm::perspective(glm::radians(45.0f), (float)800/600, 0.1f, 100.0f);
 
+    // Create the mvp matrix
+    glm::mat4 mvp;
+
     // Create the pointers to the uniform floats in the vertex shader
-    GLuint modelLoc = glGetUniformLocation(s.program, "model");
-    GLuint viewLoc = glGetUniformLocation(s.program, "view");
-    GLuint projectionLoc = glGetUniformLocation(s.program, "projection");
+    GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
+
+    // Create the position matrix of the camera
+    glm::vec3 camera = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // Create the game loop to run until the window close button or esc is clicked
     while(!glfwWindowShouldClose(window)) {
 
+        // Check pressed keys
+        if (keys[0]) {
+            camera.y += 3 * camSpeed;
+            camera.z -= 4 * camSpeed;
+        }
+        if(keys[1]) {
+            camera.y -= 3 * camSpeed;
+            camera.z += 4 * camSpeed;
+        }
+        if(keys[2]) {
+            camera.x -= 5 * camSpeed;
+        }
+        if(keys[3]) {
+            camera.x += 5 * camSpeed;
+        }
+
+        // Recalculate the model matrix
+        glm::mat4 modelMatrix;
+        modelMatrix = glm::translate(modelMatrix, camera);
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+        // Create the mvp matrix for the plane
+        mvp = projectionMatrix * viewMatrix * modelMatrix;
+
         // Pass the data for the model, view and projection matrix to the shader
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+        glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 
         // Clear to background colour
         glClearBufferfv(GL_COLOR, 0, bg);
 
         // Bind to the buffer to draw the plane
-        //glBindVertexArray(pVAO);
+        glBindVertexArray(pVAO);
 
         // Draw the triangle
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
