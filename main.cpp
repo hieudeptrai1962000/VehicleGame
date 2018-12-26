@@ -10,6 +10,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "shaders/shader.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -58,30 +60,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 }
 
-// Load shader and return string
-string loadFile(string fName) {
-
-    // Create an input file stream to load shaders
-    std::ifstream inFile;
-
-    // Open the file
-    inFile.open(fName, ios::in);
-
-    // Check if the file failed to load
-    if(!inFile) {
-        fprintf(stderr, "%s not found...\n", fName.c_str());
-        exit(1);
-    }
-
-    // Buffer the string as a string stream
-    std::stringstream buffer;
-    buffer << inFile.rdbuf();
-
-    // Return the string
-    return buffer.str()+"\0";
-
-}
-
 int main(int argc, const char * argv[]) {
     
     // Check whether GLFW initialises successfully
@@ -126,68 +104,8 @@ int main(int argc, const char * argv[]) {
     glewExperimental = GL_TRUE;
     glewInit();
 
-    // Load the vertex shader from file
-    const char *vertexData = loadFile("shaders/vertex.glsl").c_str();
-
-    // Create the shaders
-    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-
-    // Set the source and destination of object for the shader then compile
-    glShaderSource(vs, 1, &vertexData, NULL);
-    glCompileShader(vs);
-
-    // Check for compile errors
-    int success;
-    glGetShaderiv(vs, GL_COMPILE_STATUS, &success);
-
-    // If there is an error, log
-    if(!success) {
-        char error[512];
-        glGetShaderInfoLog(vs, 512, NULL, error);
-        fprintf(stderr, "Error compiling vertex shader: \n%s\nUsing default shader...\n", error);
-    }
-
-    // Load the frag shader from file
-    const char *fragData = loadFile("shaders/fragment.glsl").c_str();
-
-    // Set the source and destination of object for the shader then compile
-    glShaderSource(fs, 1, &fragData, NULL);
-    glCompileShader(fs);
-
-    // Check for compile errors
-    glGetShaderiv(fs, GL_COMPILE_STATUS, &success);
-
-    // If there is an error, log
-    if(!success) {
-        char error[512];
-        glGetShaderInfoLog(fs, 512, NULL, error);
-        fprintf(stderr, "Error compiling fragment shader: \n%s\nUsing default shader...\n", error);
-    }
-
-    // Create the program to handle the shaders
-    GLuint program;
-    program = glCreateProgram();
-
-    // Attach the shaders
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-
-    // Link the program
-    glLinkProgram(program);
-
-    // Check for success of linking
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
-
-    // If there is an error, log
-    if(!success) {
-        char error[512];
-        glGetProgramInfoLog(program, 512, NULL, error);
-        fprintf(stderr, "Error linking shader program: \n%s", error);
-    }
-
-    // Set open GL to use the shaders
-    glUseProgram(program);
+    // Load the shaders
+    Shader s("shaders/vertex.glsl", "shaders/fragment.glsl");
 
     // Load the container texture data
     int width, height, nrChannels;
@@ -199,6 +117,9 @@ int main(int argc, const char * argv[]) {
         // Create the texture object
         GLuint containerTex;
         glGenTextures(1, &containerTex);
+
+        // Use the shader
+        s.use();
 
         // Bind container tex as the currently active texture
         glBindTexture(GL_TEXTURE_2D, containerTex);
@@ -256,9 +177,9 @@ int main(int argc, const char * argv[]) {
     projectionMatrix = glm::perspective(glm::radians(45.0f), (float)800/600, 0.1f, 100.0f);
 
     // Create the pointers to the uniform floats in the vertex shader
-    GLuint modelLoc = glGetUniformLocation(program, "model");
-    GLuint viewLoc = glGetUniformLocation(program, "view");
-    GLuint projectionLoc = glGetUniformLocation(program, "projection");
+    GLuint modelLoc = glGetUniformLocation(s.program, "model");
+    GLuint viewLoc = glGetUniformLocation(s.program, "view");
+    GLuint projectionLoc = glGetUniformLocation(s.program, "projection");
 
     // Create the game loop to run until the window close button or esc is clicked
     while(!glfwWindowShouldClose(window)) {
@@ -284,10 +205,6 @@ int main(int argc, const char * argv[]) {
         glfwPollEvents();
 
     }
-
-    // Destroy the shaders
-    glDeleteShader(vs);
-    glDeleteShader(fs);
 
     // Destroy vertex objects
     glDeleteVertexArrays(1, &VAO);
