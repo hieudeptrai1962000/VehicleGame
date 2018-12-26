@@ -20,10 +20,12 @@ using namespace std;
 // Variable to hold the program
 GLuint program;
 
-// Variable to hold the buffer and array objects for the vertices
+// Variables to hold the buffer and array objects for the vertices
 GLuint pVBO;
 GLuint pVAO;
 GLuint pEBO;
+GLuint cVBO;
+GLuint cVAO;
 
 float planeVertices[] = {
      0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
@@ -40,6 +42,50 @@ float texCoords[] = {
     0.0f, 0.0f,
     1.0f, 1.0f,
     0.5f, 1.0f
+};
+
+float cubeVertices[] = {
+    -0.5f, -1.0f, -0.5f,  0.0f, 0.0f,
+     0.5f, -1.0f, -0.5f,  1.0f, 0.0f,
+     0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
+     0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
+    -0.5f,  1.0f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -1.0f, -0.5f,  0.0f, 0.0f,
+
+    -0.5f, -1.0f,  0.5f,  0.0f, 0.0f,
+     0.5f, -1.0f,  0.5f,  1.0f, 0.0f,
+     0.5f,  1.0f,  0.5f,  1.0f, 1.0f,
+     0.5f,  1.0f,  0.5f,  1.0f, 1.0f,
+    -0.5f,  1.0f,  0.5f,  0.0f, 1.0f,
+    -0.5f, -1.0f,  0.5f,  0.0f, 0.0f,
+
+    -0.5f,  1.0f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
+    -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -1.0f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  1.0f,  0.5f,  1.0f, 0.0f,
+
+     0.5f,  1.0f,  0.5f,  1.0f, 0.0f,
+     0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
+     0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
+     0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
+     0.5f, -1.0f,  0.5f,  0.0f, 0.0f,
+     0.5f,  1.0f,  0.5f,  1.0f, 0.0f,
+
+    -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
+     0.5f, -1.0f, -0.5f,  1.0f, 1.0f,
+     0.5f, -1.0f,  0.5f,  1.0f, 0.0f,
+     0.5f, -1.0f,  0.5f,  1.0f, 0.0f,
+    -0.5f, -1.0f,  0.5f,  0.0f, 0.0f,
+    -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
+
+    -0.5f,  1.0f, -0.5f,  0.0f, 1.0f,
+     0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
+     0.5f,  1.0f,  0.5f,  1.0f, 0.0f,
+     0.5f,  1.0f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  1.0f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  1.0f, -0.5f,  0.0f, 1.0f
 };
 
 // Create an array of booleans to store key presses
@@ -98,7 +144,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 // Method to generate the world plane
-void worldPlane() {
+void planeMesh() {
 
     // Create a VAO to hold information about the render object for the VBO data
     glGenVertexArrays(1, &pVAO);
@@ -131,6 +177,36 @@ void worldPlane() {
     // Debind the buffers
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+}
+
+// Method to generate the cube
+void cubeMesh() {
+
+    // Create a VAO to hold information about the render object for the VBO data
+    glGenVertexArrays(1, &cVAO);
+
+    // Bind to the vertex array
+    glBindVertexArray(cVAO);
+
+    // Create the vertex buffer object and bind this as the active GL buffer
+    glGenBuffers(1, &cVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, cVBO);
+
+    // Buffer the vertex information in the vertex buffer object
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+
+    // Setup the step data for the VBO to access x,y,z of each vertex
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Setup the step data for the VBO to access tex coords of each vertex
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // Debind the buffers
+    glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
@@ -168,6 +244,72 @@ void genTexture(GLuint tex, GLenum texLoc, Shader s, const GLchar* sLocation) {
     else {
         fprintf(stderr, "Failed to load texture...");
     }
+
+}
+
+// Method to draw the world plane
+void drawPlane(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, glm::vec3 camera) {
+
+        // Create the pointers to the uniform floats in the vertex shader
+        const GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
+
+        // Use the shader program
+        s.use();
+
+        // Recalculate the model matrix
+        glm::mat4 modelMatrix;
+        modelMatrix = glm::translate(modelMatrix, camera);
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+        // Create the mvp matrix for the plane
+        glm::mat4 mvp;
+        mvp = projectionMatrix * viewMatrix * modelMatrix;
+
+        // Pass the data for the model, view and projection matrix to the shader
+        glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+
+        // Bind to the buffer to draw the plane
+        glBindVertexArray(pVAO);
+
+        // Draw the triangle
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        // Debind the buffer
+        glBindVertexArray(0);
+
+}
+
+// Create a method to draw the cube
+void drawVehicle(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, glm::vec3 camera) {
+
+        // Create the pointers to the uniform floats in the vertex shader
+        const GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
+
+        // Use the shader program
+        s.use();
+
+        // Recalculate the model matrix
+        glm::mat4 modelMatrix;
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.03f, 0.03f, 0.03f));
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.5f));
+        modelMatrix = glm::rotate(modelMatrix, (float)(glfwGetTime() / 5.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        // Create the mvp matrix for the plane
+        glm::mat4 mvp;
+        mvp = projectionMatrix * viewMatrix * modelMatrix;
+
+        // Pass the data for the model, view and projection matrix to the shader
+        glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+
+        // Bind to the buffer to draw the plane
+        glBindVertexArray(cVAO);
+
+        // Draw the triangle
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        // Debind the buffer
+        glBindVertexArray(0);
 
 }
 
@@ -215,23 +357,30 @@ int main(int argc, const char * argv[]) {
     glewExperimental = GL_TRUE;
     glewInit();
 
+    // Enable depth test
+    glEnable(GL_DEPTH_TEST);
+
     // Load the shaders
-    Shader s("shaders/vertex.glsl", "shaders/fragment.glsl");
+    Shader ps("shaders/vertex.glsl", "shaders/planeFragment.glsl");
+    Shader cs("shaders/vertex.glsl", "shaders/carFragment.glsl");
 
     // Variables to hold the textures
     GLuint trackTex;
     GLuint carTex;
 
     // Generate the textures
-    genTexture(trackTex, GL_TEXTURE0,  s, "assets/track.jpg");
-    genTexture(trackTex, GL_TEXTURE1,  s, "assets/car.jpg");
+    genTexture(trackTex, GL_TEXTURE0,  ps, "assets/track.jpg");
+    genTexture(trackTex, GL_TEXTURE1,  cs, "assets/car.jpg");
 
     // Set the textures in the shader program
-    s.setInt("trackTex", 0);
-    s.setInt("carTex", 1);
+    ps.setInt("trackTex", 0);
+    cs.setInt("carTex", 1);
 
     // Generate the world plane
-    worldPlane();
+    planeMesh();
+
+    // Generate the cube mesh
+    cubeMesh();
 
     // Create the view matrix
     glm::mat4 viewMatrix;
@@ -241,14 +390,8 @@ int main(int argc, const char * argv[]) {
     glm::mat4 projectionMatrix;
     projectionMatrix = glm::perspective(glm::radians(45.0f), (float)800/600, 0.1f, 100.0f);
 
-    // Create the mvp matrix
-    glm::mat4 mvp;
-
-    // Create the pointers to the uniform floats in the vertex shader
-    GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
-
     // Create the position matrix of the camera
-    glm::vec3 camera = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 camera = glm::vec3(0.3f, 0.2f, -0.28f);
 
     // Create the game loop to run until the window close button or esc is clicked
     while(!glfwWindowShouldClose(window)) {
@@ -256,11 +399,11 @@ int main(int argc, const char * argv[]) {
         // Check pressed keys
         if (keys[0]) {
             camera.y += 3 * camSpeed;
-            camera.z -= 4 * camSpeed;
+            camera.z -= 4.3 * camSpeed;
         }
         if(keys[1]) {
             camera.y -= 3 * camSpeed;
-            camera.z += 4 * camSpeed;
+            camera.z += 4.3 * camSpeed;
         }
         if(keys[2]) {
             camera.x -= 5 * camSpeed;
@@ -269,28 +412,17 @@ int main(int argc, const char * argv[]) {
             camera.x += 5 * camSpeed;
         }
 
-        // Recalculate the model matrix
-        glm::mat4 modelMatrix;
-        modelMatrix = glm::translate(modelMatrix, camera);
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-        // Create the mvp matrix for the plane
-        mvp = projectionMatrix * viewMatrix * modelMatrix;
-
-        // Pass the data for the model, view and projection matrix to the shader
-        glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+        // Clear the depth buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Clear to background colour
         glClearBufferfv(GL_COLOR, 0, bg);
-
-        // Bind to the buffer to draw the plane
-        glBindVertexArray(pVAO);
-
-        // Draw the triangle
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        // Debind the buffer
-        glBindVertexArray(0);
+        
+        // Draw the plane
+        drawPlane(ps, projectionMatrix, viewMatrix, camera);
+        
+        // Draw the cube
+        drawVehicle(cs, projectionMatrix, viewMatrix, camera);
 
         // Swap the buffer to render
         glfwSwapBuffers(window);
@@ -307,6 +439,8 @@ int main(int argc, const char * argv[]) {
     glDeleteVertexArrays(1, &pVAO);
     glDeleteBuffers(1, &pVBO);
     glDeleteBuffers(1, &pEBO);
+    glDeleteVertexArrays(1, &cVAO);
+    glDeleteBuffers(1, &cVBO);
 
     // Destroy the program
     glDeleteProgram(program);
