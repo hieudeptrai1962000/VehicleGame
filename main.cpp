@@ -27,6 +27,14 @@ GLuint pEBO;
 GLuint cVBO;
 GLuint cVAO;
 
+// Setup keys
+const int K_UP = 0;
+const int K_DOWN = 1;
+const int K_LEFT = 2;
+const int K_RIGHT = 3;
+const int K_A = 4;
+const int K_D = 5;
+
 float planeVertices[] = {
      0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
      0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
@@ -93,6 +101,8 @@ bool keys[] = {
     false,
     false,
     false,
+    false,
+    false,
     false
 };
 
@@ -117,28 +127,40 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
     // Check for arrow key press
     if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
-        keys[0] = true;
+        keys[K_UP] = true;
     }
     if (key == GLFW_KEY_UP && action == GLFW_RELEASE) {
-        keys[0] = false;
+        keys[K_UP] = false;
     }
     if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
-        keys[1] = true;
+        keys[K_DOWN] = true;
     }
     if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE) {
-        keys[1] = false;
+        keys[K_DOWN] = false;
     }
     if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
-        keys[2] = true;
+        keys[K_LEFT] = true;
     }
     if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE) {
-        keys[2] = false;
+        keys[K_LEFT] = false;
     }
     if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
-        keys[3] = true;
+        keys[K_RIGHT] = true;
     }
     if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE) {
-        keys[3] = false;
+        keys[K_RIGHT] = false;
+    }
+    if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+        keys[K_A] = true;
+    }
+    if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
+        keys[K_A] = false;
+    }
+    if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+        keys[K_D] = true;
+    }
+    if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
+        keys[K_D] = false;
     }
 
 }
@@ -280,7 +302,7 @@ void drawPlane(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, glm::
 }
 
 // Create a method to draw the cube
-void drawVehicle(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, glm::vec3 camera) {
+void drawVehicle(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, glm::vec3 camera, float rotation) {
 
         // Create the pointers to the uniform floats in the vertex shader
         const GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
@@ -293,7 +315,7 @@ void drawVehicle(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, glm
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.03f, 0.03f, 0.03f));
         modelMatrix = glm::rotate(modelMatrix, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.5f));
-        modelMatrix = glm::rotate(modelMatrix, (float)(glfwGetTime() / 5.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 
         // Create the mvp matrix for the plane
         glm::mat4 mvp;
@@ -393,23 +415,32 @@ int main(int argc, const char * argv[]) {
     // Create the position matrix of the camera
     glm::vec3 camera = glm::vec3(0.3f, 0.2f, -0.28f);
 
+    // Hold the rotation of the vehicle
+    float vRotation = 0.0f;
+
     // Create the game loop to run until the window close button or esc is clicked
     while(!glfwWindowShouldClose(window)) {
 
         // Check pressed keys
-        if (keys[0]) {
+        if (keys[K_UP]) {
             camera.y += 3 * camSpeed;
             camera.z -= 4.3 * camSpeed;
         }
-        if(keys[1]) {
+        if(keys[K_DOWN]) {
             camera.y -= 3 * camSpeed;
             camera.z += 4.3 * camSpeed;
         }
-        if(keys[2]) {
+        if(keys[K_LEFT]) {
+            camera.x += 5 * camSpeed;
+        }
+        if(keys[K_RIGHT]) {
             camera.x -= 5 * camSpeed;
         }
-        if(keys[3]) {
-            camera.x += 5 * camSpeed;
+        if(keys[K_A]) {
+            vRotation += 2.0f;
+        }
+        if(keys[K_D]) {
+            vRotation -= 2.0f;
         }
 
         // Clear the depth buffer
@@ -422,7 +453,7 @@ int main(int argc, const char * argv[]) {
         drawPlane(ps, projectionMatrix, viewMatrix, camera);
         
         // Draw the cube
-        drawVehicle(cs, projectionMatrix, viewMatrix, camera);
+        drawVehicle(cs, projectionMatrix, viewMatrix, camera, vRotation);
 
         // Swap the buffer to render
         glfwSwapBuffers(window);
