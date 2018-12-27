@@ -57,6 +57,7 @@ float carVertices[] = {
 
     // BOTTOM OF CAR
 
+    // TOP SIDE
     -0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
      0.5f, -1.0f,  0.3f,  1.0f, 0.0f,
      0.5f,  1.0f,  0.3f,  1.0f, 1.0f,
@@ -64,6 +65,7 @@ float carVertices[] = {
     -0.5f,  1.0f,  0.3f,  0.0f, 1.0f,
     -0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
 
+    // LEFT SIDE
     -0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
     -0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
     -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
@@ -71,6 +73,7 @@ float carVertices[] = {
     -0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
     -0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
 
+    // RIGHT SIDE
      0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
      0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
      0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
@@ -78,6 +81,7 @@ float carVertices[] = {
      0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
      0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
 
+    // BACK SIDE
     -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
      0.5f, -1.0f, -0.5f,  1.0f, 1.0f,
      0.5f, -1.0f,  0.3f,  1.0f, 0.0f,
@@ -85,6 +89,7 @@ float carVertices[] = {
     -0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
     -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
 
+    // FRONT SIDE
     -0.5f,  1.0f, -0.5f,  0.0f, 1.0f,
      0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
      0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
@@ -177,43 +182,43 @@ float truckVertices[] = {
     // TOP OF TRUCK
 
     // TOP SIDE
-    -0.5f,  0.1f,  1.0f,  0.0f, 0.0f,
-     0.5f,  0.1f,  1.0f,  1.0f, 0.0f,
-     0.5f,  1.0f,  1.0f,  1.0f, 1.0f,
-     0.5f,  1.0f,  1.0f,  1.0f, 1.0f,
-    -0.5f,  1.0f,  1.0f,  0.0f, 1.0f,
-    -0.5f,  0.1f,  1.0f,  0.0f, 0.0f,
+    -0.4f,  0.1f,  1.0f,  0.0f, 0.0f,
+     0.4f,  0.1f,  1.0f,  1.0f, 0.0f,
+     0.4f,  0.8f,  1.0f,  1.0f, 1.0f,
+     0.4f,  0.8f,  1.0f,  1.0f, 1.0f,
+    -0.4f,  0.8f,  1.0f,  0.0f, 1.0f,
+    -0.4f,  0.1f,  1.0f,  0.0f, 0.0f,
 
     // LEFT SIDE
-    -0.5f,  1.0f,  1.0f,  1.0f, 0.0f,
+    -0.4f,  0.8f,  1.0f,  1.0f, 0.0f,
     -0.5f,  1.0f,  0.3f,  1.0f, 1.0f,
     -0.5f,  0.1f,  0.3f,  0.0f, 1.0f,
     -0.5f,  0.1f,  0.3f,  0.0f, 1.0f,
-    -0.5f,  0.1f,  1.0f,  0.0f, 0.0f,
-    -0.5f,  1.0f,  1.0f,  1.0f, 0.0f,
+    -0.4f,  0.1f,  1.0f,  0.0f, 0.0f,
+    -0.4f,  0.8f,  1.0f,  1.0f, 0.0f,
 
     // RIGHT SIDE
-     0.5f,  1.0f,  1.0f,  1.0f, 0.0f,
+     0.4f,  0.8f,  1.0f,  1.0f, 0.0f,
      0.5f,  1.0f,  0.3f,  1.0f, 1.0f,
      0.5f,  0.1f,  0.3f,  0.0f, 1.0f,
      0.5f,  0.1f,  0.3f,  0.0f, 1.0f,
-     0.5f,  0.1f,  1.0f,  0.0f, 0.0f,
-     0.5f,  1.0f,  1.0f,  1.0f, 0.0f,
+     0.4f,  0.1f,  1.0f,  0.0f, 0.0f,
+     0.4f,  0.8f,  1.0f,  1.0f, 0.0f,
 
     // BACK SIDE
     -0.5f,  0.1f,  0.3f,  0.0f, 1.0f,
      0.5f,  0.1f,  0.3f,  1.0f, 1.0f,
-     0.5f,  0.1f,  1.0f,  1.0f, 0.0f,
-     0.5f,  0.1f,  1.0f,  1.0f, 0.0f,
-    -0.5f,  0.1f,  1.0f,  0.0f, 0.0f,
+     0.4f,  0.1f,  1.0f,  1.0f, 0.0f,
+     0.4f,  0.1f,  1.0f,  1.0f, 0.0f,
+    -0.4f,  0.1f,  1.0f,  0.0f, 0.0f,
     -0.5f,  0.1f,  0.3f,  0.0f, 1.0f,
 
     // FRONT SIDE
     -0.5f,  1.0f,  0.3f,  0.0f, 1.0f,
      0.5f,  1.0f,  0.3f,  1.0f, 1.0f,
-     0.5f,  1.0f,  1.0f,  1.0f, 0.0f,
-     0.5f,  1.0f,  1.0f,  1.0f, 0.0f,
-    -0.5f,  1.0f,  1.0f,  0.0f, 0.0f,
+     0.4f,  0.8f,  1.0f,  1.0f, 0.0f,
+     0.4f,  0.8f,  1.0f,  1.0f, 0.0f,
+    -0.4f,  0.8f,  1.0f,  0.0f, 0.0f,
     -0.5f,  1.0f,  0.3f,  0.0f, 1.0f
 };
 
@@ -334,7 +339,7 @@ void planeMesh() {
 }
 
 // Method to generate the cube
-void cubeMesh() {
+void vehicleMesh() {
 
     // Create a VAO to hold information about the render object for the VBO data
     glGenVertexArrays(1, &cVAO);
@@ -347,7 +352,7 @@ void cubeMesh() {
     glBindBuffer(GL_ARRAY_BUFFER, cVBO);
 
     // Buffer the vertex information in the vertex buffer object
-    glBufferData(GL_ARRAY_BUFFER, sizeof(truckVertices), truckVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(carVertices), carVertices, GL_STATIC_DRAW);
 
     // Setup the step data for the VBO to access x,y,z of each vertex
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
@@ -441,7 +446,7 @@ void drawVehicle(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, flo
         // Recalculate the model matrix
         glm::mat4 modelMatrix;
         modelMatrix = glm::translate(modelMatrix, position);
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.03f, 0.03f, 0.03f));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.02f, 0.02f, 0.02f));
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.5f));
         modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -510,6 +515,9 @@ int main(int argc, const char * argv[]) {
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
 
+    // Enable vertical flipping of textures
+    stbi_set_flip_vertically_on_load(true);
+
     // Load the shaders
     Shader ps("shaders/vertex.glsl", "shaders/planeFragment.glsl");
     Shader cs("shaders/vertex.glsl", "shaders/carFragment.glsl");
@@ -520,7 +528,7 @@ int main(int argc, const char * argv[]) {
 
     // Generate the textures
     genTexture(trackTex, GL_TEXTURE0,  ps, "assets/track.jpg");
-    genTexture(trackTex, GL_TEXTURE1,  cs, "assets/car.jpg");
+    genTexture(trackTex, GL_TEXTURE1,  cs, "assets/carRed.jpg");
 
     // Set the textures in the shader program
     ps.setInt("trackTex", 0);
@@ -529,8 +537,8 @@ int main(int argc, const char * argv[]) {
     // Generate the world plane
     planeMesh();
 
-    // Generate the cube mesh
-    cubeMesh();
+    // Generate the vehicle mesh
+    vehicleMesh();
 
     // Create the view matrix
     glm::mat4 viewMatrix;
@@ -540,7 +548,7 @@ int main(int argc, const char * argv[]) {
     projectionMatrix = glm::perspective(glm::radians(45.0f), (float)800/600, 0.1f, 100.0f);
 
     // Create the position of the vehicle
-    glm::vec3 vehiclePos = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 vehiclePos = glm::vec3(-0.23f, -0.05f, 0.0f);
 
     // Create the position matrix of the camera
     glm::vec3 cameraDistance =  glm::vec3(0.0f, -0.4f, 0.3f);

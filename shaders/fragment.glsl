@@ -3,10 +3,9 @@ out vec4 FragColor;
 
 in vec2 TexCoord;
 
-uniform sampler2D trackTex;
-uniform sampler2D carTex;
+uniform sampler2D tex;
 
 void main()
 {
-    FragColor = texture(trackTex, TexCoord);
+    FragColor = texture(tex, TexCoord);
 }
