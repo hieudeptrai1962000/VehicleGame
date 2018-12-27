@@ -34,6 +34,7 @@ const int K_LEFT = 2;
 const int K_RIGHT = 3;
 const int K_A = 4;
 const int K_D = 5;
+const int K_SPACE = 6;
 
 float planeVertices[] = {
      0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
@@ -103,6 +104,7 @@ bool keys[] = {
     false,
     false,
     false,
+    false,
     false
 };
 
@@ -163,6 +165,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
     if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
         keys[K_D] = false;
+    }
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        keys[K_SPACE] = true;
+    }
+    if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
+        keys[K_SPACE] = false;
     }
 
 }
@@ -445,13 +453,28 @@ int main(int argc, const char * argv[]) {
             }
         }
         if(keys[K_DOWN]) {
-            vehicleSpeed -= 5 * acceleration;
+            if(vehicleSpeed <= 0) {
+                vehicleSpeed = -maxSpeed / 4;
+            }
+            else {
+                vehicleSpeed -= 5 * acceleration;
+            }
         }
         if(keys[K_LEFT]) {
-            vRotation += 2.0f;
+            if (vehicleSpeed != 0) {
+                vRotation += 2.0f;
+                if (keys[K_SPACE]) {
+                    vRotation += 3.0f;
+                }
+            }
         }
         if(keys[K_RIGHT]) {
-            vRotation -= 2.0f;
+            if (vehicleSpeed != 0) {
+                vRotation -= 2.0f;
+                if (keys[K_SPACE]) {
+                    vRotation -= 3.0f;
+                }
+            }
         }
 
         // Caculate the x and y component of the movement and move by speed
