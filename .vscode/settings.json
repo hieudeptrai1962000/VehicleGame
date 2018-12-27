@@ -21,6 +21,7 @@
         "streambuf": "cpp",
         "sstream": "cpp",
         "__bit_reference": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "cmath": "cpp"
     }
 }

@@ -107,7 +107,9 @@ bool keys[] = {
 };
 
 // Set the camera speed
-float camSpeed = 0.0001;
+float vehicleSpeed = 0.0f;
+float maxSpeed = 0.01f;
+float acceleration = 0.00005f;
 
 // Set the background colour
 static const GLfloat bg[] = {0.2f, 0.3f, 0.3f, 1.0f};
@@ -270,7 +272,7 @@ void genTexture(GLuint tex, GLenum texLoc, Shader s, const GLchar* sLocation) {
 }
 
 // Method to draw the world plane
-void drawPlane(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, glm::vec3 camera) {
+void drawPlane(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix) {
 
         // Create the pointers to the uniform floats in the vertex shader
         const GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
@@ -280,8 +282,6 @@ void drawPlane(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, glm::
 
         // Recalculate the model matrix
         glm::mat4 modelMatrix;
-        modelMatrix = glm::translate(modelMatrix, camera);
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
         // Create the mvp matrix for the plane
         glm::mat4 mvp;
@@ -302,7 +302,7 @@ void drawPlane(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, glm::
 }
 
 // Create a method to draw the cube
-void drawVehicle(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, glm::vec3 camera, float rotation) {
+void drawVehicle(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, float rotation, glm::vec3 position) {
 
         // Create the pointers to the uniform floats in the vertex shader
         const GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
@@ -312,8 +312,8 @@ void drawVehicle(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, glm
 
         // Recalculate the model matrix
         glm::mat4 modelMatrix;
+        modelMatrix = glm::translate(modelMatrix, position);
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.03f, 0.03f, 0.03f));
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.5f));
         modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -406,14 +406,19 @@ int main(int argc, const char * argv[]) {
 
     // Create the view matrix
     glm::mat4 viewMatrix;
-    viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -1.0f));
 
     // Create the projection matrix to use a perspective camera
     glm::mat4 projectionMatrix;
     projectionMatrix = glm::perspective(glm::radians(45.0f), (float)800/600, 0.1f, 100.0f);
 
+    // Create the position of the vehicle
+    glm::vec3 vehiclePos = glm::vec3(0.0f, 0.0f, 0.0f);
+
     // Create the position matrix of the camera
-    glm::vec3 camera = glm::vec3(0.3f, 0.2f, -0.28f);
+    glm::vec3 cameraDistance =  glm::vec3(0.0f, -0.4f, 0.3f);
+
+    // Define a vector that points up
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
     // Hold the rotation of the vehicle
     float vRotation = 0.0f;
@@ -423,37 +428,58 @@ int main(int argc, const char * argv[]) {
 
         // Check pressed keys
         if (keys[K_UP]) {
-            camera.y += 3 * camSpeed;
-            camera.z -= 4.3 * camSpeed;
+            
+            // Check if we are at max speed
+            if (!(vehicleSpeed >= maxSpeed)) {
+                vehicleSpeed += acceleration;
+            }
+            else {
+                vehicleSpeed = maxSpeed;
+            }
+
+        }
+        else {
+            vehicleSpeed -= acceleration;
+            if(vehicleSpeed <= 0) {
+                vehicleSpeed = 0;
+            }
         }
         if(keys[K_DOWN]) {
-            camera.y -= 3 * camSpeed;
-            camera.z += 4.3 * camSpeed;
+            vehicleSpeed -= 5 * acceleration;
         }
         if(keys[K_LEFT]) {
-            camera.x += 5 * camSpeed;
-        }
-        if(keys[K_RIGHT]) {
-            camera.x -= 5 * camSpeed;
-        }
-        if(keys[K_A]) {
             vRotation += 2.0f;
         }
-        if(keys[K_D]) {
+        if(keys[K_RIGHT]) {
             vRotation -= 2.0f;
         }
+
+        // Caculate the x and y component of the movement and move by speed
+        vehiclePos.x -= sin(glm::radians(vRotation)) * vehicleSpeed;
+        vehiclePos.y += cos(glm::radians(vRotation)) * vehicleSpeed;
 
         // Clear the depth buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Clear to background colour
         glClearBufferfv(GL_COLOR, 0, bg);
+
+        // Create the position matrix of the camera
+        glm::vec3 cameraPos = vehiclePos + cameraDistance;
+
+        // Calculate the camera direction
+        glm::vec3 cameraDirection = glm::normalize(cameraPos - vehiclePos);
+        glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+        glm::vec3 cameraUp = glm::normalize(glm::cross(cameraDirection, cameraRight));
+
+        // Create the view matrix
+        viewMatrix = glm::lookAt(cameraPos, vehiclePos, cameraUp);
         
         // Draw the plane
-        drawPlane(ps, projectionMatrix, viewMatrix, camera);
+        drawPlane(ps, projectionMatrix, viewMatrix);
         
         // Draw the cube
-        drawVehicle(cs, projectionMatrix, viewMatrix, camera, vRotation);
+        drawVehicle(cs, projectionMatrix, viewMatrix, vRotation, vehiclePos);
 
         // Swap the buffer to render
         glfwSwapBuffers(window);
