@@ -12,6 +12,7 @@
 #include <glm/ext.hpp>
 
 #include "shaders/shader.h"
+#include "vehicle.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -25,8 +26,6 @@ GLuint program;
 GLuint pVBO;
 GLuint pVAO;
 GLuint pEBO;
-GLuint cVBO;
-GLuint cVAO;
 
 // Setup keys
 const int K_UP = 0;
@@ -57,175 +56,6 @@ float texCoords[] = {
     0.5f, 1.0f
 };
 
-float carVertices[] = {
-
-    // BOTTOM OF CAR
-
-    // TOP SIDE
-    -0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
-     0.5f, -1.0f,  0.3f,  1.0f, 0.0f,
-     0.5f,  1.0f,  0.3f,  1.0f, 1.0f,
-     0.5f,  1.0f,  0.3f,  1.0f, 1.0f,
-    -0.5f,  1.0f,  0.3f,  0.0f, 1.0f,
-    -0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
-
-    // LEFT SIDE
-    -0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
-    -0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
-    -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
-    -0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
-
-    // RIGHT SIDE
-     0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
-     0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
-     0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
-     0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
-     0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
-     0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
-
-    // BACK SIDE
-    -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
-     0.5f, -1.0f, -0.5f,  1.0f, 1.0f,
-     0.5f, -1.0f,  0.3f,  1.0f, 0.0f,
-     0.5f, -1.0f,  0.3f,  1.0f, 0.0f,
-    -0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
-    -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
-
-    // FRONT SIDE
-    -0.5f,  1.0f, -0.5f,  0.0f, 1.0f,
-     0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
-     0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
-     0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
-    -0.5f,  1.0f,  0.3f,  0.0f, 0.0f,
-    -0.5f,  1.0f, -0.5f,  0.0f, 1.0f,
-    
-    // TOP OF CAR
-
-    -0.3f, -0.6f,  0.8f,  0.0f, 0.0f,
-     0.3f, -0.6f,  0.8f,  1.0f, 0.0f,
-     0.3f,  0.2f,  0.8f,  1.0f, 1.0f,
-     0.3f,  0.2f,  0.8f,  1.0f, 1.0f,
-    -0.3f,  0.2f,  0.8f,  0.0f, 1.0f,
-    -0.3f, -0.6f,  0.8f,  0.0f, 0.0f,
-
-    -0.3f,  0.2f,  0.8f,  1.0f, 0.0f,
-    -0.3f,  0.6f,  0.3f,  1.0f, 1.0f,
-    -0.3f, -0.6f,  0.3f,  0.0f, 1.0f,
-    -0.3f, -0.6f,  0.3f,  0.0f, 1.0f,
-    -0.3f, -0.6f,  0.8f,  0.0f, 0.0f,
-    -0.3f,  0.2f,  0.8f,  1.0f, 0.0f,
-
-     0.3f,  0.2f,  0.8f,  1.0f, 0.0f,
-     0.3f,  0.6f,  0.3f,  1.0f, 1.0f,
-     0.3f, -0.6f,  0.3f,  0.0f, 1.0f,
-     0.3f, -0.6f,  0.3f,  0.0f, 1.0f,
-     0.3f, -0.6f,  0.8f,  0.0f, 0.0f,
-     0.3f,  0.2f,  0.8f,  1.0f, 0.0f,
-
-    -0.3f, -0.6f,  0.3f,  0.0f, 1.0f,
-     0.3f, -0.6f,  0.3f,  1.0f, 1.0f,
-     0.3f, -0.6f,  0.8f,  1.0f, 0.0f,
-     0.3f, -0.6f,  0.8f,  1.0f, 0.0f,
-    -0.3f, -0.6f,  0.8f,  0.0f, 0.0f,
-    -0.3f, -0.6f,  0.3f,  0.0f, 1.0f,
-
-    -0.3f,  0.6f,  0.3f,  0.0f, 1.0f,
-     0.3f,  0.6f,  0.3f,  1.0f, 1.0f,
-     0.3f,  0.2f,  0.8f,  1.0f, 0.0f,
-     0.3f,  0.2f,  0.8f,  1.0f, 0.0f,
-    -0.3f,  0.2f,  0.8f,  0.0f, 0.0f,
-    -0.3f,  0.6f,  0.3f,  0.0f, 1.0f
-};
-
-float truckVertices[] = {
-
-    // BOTTOM OF TRUCK
-
-    // TOP SIDE
-    -0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
-     0.5f, -1.0f,  0.3f,  1.0f, 0.0f,
-     0.5f,  1.0f,  0.3f,  1.0f, 1.0f,
-     0.5f,  1.0f,  0.3f,  1.0f, 1.0f,
-    -0.5f,  1.0f,  0.3f,  0.0f, 1.0f,
-    -0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
-
-    // LEFT SIDE
-    -0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
-    -0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
-    -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
-    -0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
-
-    // RIGHT SIDE
-     0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
-     0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
-     0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
-     0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
-     0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
-     0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
-
-    // BACK SIDE
-    -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
-     0.5f, -1.0f, -0.5f,  1.0f, 1.0f,
-     0.5f, -1.0f,  0.3f,  1.0f, 0.0f,
-     0.5f, -1.0f,  0.3f,  1.0f, 0.0f,
-    -0.5f, -1.0f,  0.3f,  0.0f, 0.0f,
-    -0.5f, -1.0f, -0.5f,  0.0f, 1.0f,
-
-    // FRONT SIDE
-    -0.5f,  1.0f, -0.5f,  0.0f, 1.0f,
-     0.5f,  1.0f, -0.5f,  1.0f, 1.0f,
-     0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
-     0.5f,  1.0f,  0.3f,  1.0f, 0.0f,
-    -0.5f,  1.0f,  0.3f,  0.0f, 0.0f,
-    -0.5f,  1.0f, -0.5f,  0.0f, 1.0f,
-
-    // TOP OF TRUCK
-
-    // TOP SIDE
-    -0.4f,  0.1f,  1.0f,  0.0f, 0.0f,
-     0.4f,  0.1f,  1.0f,  1.0f, 0.0f,
-     0.4f,  0.8f,  1.0f,  1.0f, 1.0f,
-     0.4f,  0.8f,  1.0f,  1.0f, 1.0f,
-    -0.4f,  0.8f,  1.0f,  0.0f, 1.0f,
-    -0.4f,  0.1f,  1.0f,  0.0f, 0.0f,
-
-    // LEFT SIDE
-    -0.4f,  0.8f,  1.0f,  1.0f, 0.0f,
-    -0.5f,  1.0f,  0.3f,  1.0f, 1.0f,
-    -0.5f,  0.1f,  0.3f,  0.0f, 1.0f,
-    -0.5f,  0.1f,  0.3f,  0.0f, 1.0f,
-    -0.4f,  0.1f,  1.0f,  0.0f, 0.0f,
-    -0.4f,  0.8f,  1.0f,  1.0f, 0.0f,
-
-    // RIGHT SIDE
-     0.4f,  0.8f,  1.0f,  1.0f, 0.0f,
-     0.5f,  1.0f,  0.3f,  1.0f, 1.0f,
-     0.5f,  0.1f,  0.3f,  0.0f, 1.0f,
-     0.5f,  0.1f,  0.3f,  0.0f, 1.0f,
-     0.4f,  0.1f,  1.0f,  0.0f, 0.0f,
-     0.4f,  0.8f,  1.0f,  1.0f, 0.0f,
-
-    // BACK SIDE
-    -0.5f,  0.1f,  0.3f,  0.0f, 1.0f,
-     0.5f,  0.1f,  0.3f,  1.0f, 1.0f,
-     0.4f,  0.1f,  1.0f,  1.0f, 0.0f,
-     0.4f,  0.1f,  1.0f,  1.0f, 0.0f,
-    -0.4f,  0.1f,  1.0f,  0.0f, 0.0f,
-    -0.5f,  0.1f,  0.3f,  0.0f, 1.0f,
-
-    // FRONT SIDE
-    -0.5f,  1.0f,  0.3f,  0.0f, 1.0f,
-     0.5f,  1.0f,  0.3f,  1.0f, 1.0f,
-     0.4f,  0.8f,  1.0f,  1.0f, 0.0f,
-     0.4f,  0.8f,  1.0f,  1.0f, 0.0f,
-    -0.4f,  0.8f,  1.0f,  0.0f, 0.0f,
-    -0.5f,  1.0f,  0.3f,  0.0f, 1.0f
-};
-
 // Create an array of booleans to store key presses
 bool keys[] = {
     false,
@@ -236,11 +66,6 @@ bool keys[] = {
     false,
     false
 };
-
-// Set the camera speed
-float vehicleSpeed = 0.0f;
-float maxSpeed = 0.01f;
-float acceleration = 0.00005f;
 
 // Set the background colour
 static const GLfloat bg[] = {0.2f, 0.3f, 0.3f, 1.0f};
@@ -351,36 +176,6 @@ void planeMesh() {
 
 }
 
-// Method to generate the cube
-void vehicleMesh() {
-
-    // Create a VAO to hold information about the render object for the VBO data
-    glGenVertexArrays(1, &cVAO);
-
-    // Bind to the vertex array
-    glBindVertexArray(cVAO);
-
-    // Create the vertex buffer object and bind this as the active GL buffer
-    glGenBuffers(1, &cVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, cVBO);
-
-    // Buffer the vertex information in the vertex buffer object
-    glBufferData(GL_ARRAY_BUFFER, sizeof(carVertices), carVertices, GL_STATIC_DRAW);
-
-    // Setup the step data for the VBO to access x,y,z of each vertex
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Setup the step data for the VBO to access tex coords of each vertex
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // Debind the buffers
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-}
-
 // Method to generate and bind a texture
 void genTexture(GLuint tex, GLenum texLoc, Shader s, const GLchar* sLocation) {
 
@@ -441,40 +236,6 @@ void drawPlane(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix) {
 
     // Draw the triangle
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-    // Debind the buffer
-    glBindVertexArray(0);
-
-}
-
-// Create a method to draw the cube
-void drawVehicle(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, float rotation, glm::vec3 position) {
-
-    // Create the pointers to the uniform floats in the vertex shader
-    const GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
-
-    // Use the shader program
-    s.use();
-
-    // Recalculate the model matrix
-    glm::mat4 modelMatrix;
-    modelMatrix = glm::translate(modelMatrix, position);
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.02f, 0.02f, 0.02f));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.5f));
-    modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    // Create the mvp matrix for the plane
-    glm::mat4 mvp;
-    mvp = projectionMatrix * viewMatrix * modelMatrix;
-
-    // Pass the data for the model, view and projection matrix to the shader
-    glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
-
-    // Bind to the buffer to draw the plane
-    glBindVertexArray(cVAO);
-
-    // Draw the triangle
-    glDrawArrays(GL_TRIANGLES, 0, 60);
 
     // Debind the buffer
     glBindVertexArray(0);
@@ -550,8 +311,8 @@ int main(int argc, const char * argv[]) {
     // Generate the world plane
     planeMesh();
 
-    // Generate the vehicle mesh
-    vehicleMesh();
+    // Create the vehicle
+    Vehicle v(glm::vec3(-0.23f, -0.05f, 0.0f), 0.0f, 0.0f, 0.01f, 0.00005f);
 
     // Create the view matrix
     glm::mat4 viewMatrix;
@@ -560,22 +321,16 @@ int main(int argc, const char * argv[]) {
     glm::mat4 projectionMatrix;
     projectionMatrix = glm::perspective(glm::radians(45.0f), (float)800/600, 0.1f, 100.0f);
 
-    // Create the position of the vehicle
-    glm::vec3 vehiclePos = glm::vec3(-0.23f, -0.05f, 0.0f);
-
     // Create the position matrix of the camera
     glm::vec3 cameraDistance =  glm::vec3(0.0f, -0.4f, 0.3f);
 
     // Create the position matrix of the camera
-    glm::vec3 cameraPos = vehiclePos + cameraDistance;
+    glm::vec3 cameraPos = v.position + cameraDistance;
 
     // Define a vector that points up
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 cameraDirection = glm::normalize(cameraPos - vehiclePos);
+    glm::vec3 cameraDirection = glm::normalize(cameraPos - v.position);
     glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-
-    // Hold the rotation of the vehicle
-    float vRotation = 0.0f;
 
     // Set to the default camera
     cameraType = 0;
@@ -587,54 +342,54 @@ int main(int argc, const char * argv[]) {
         if (keys[K_UP]) {
             
             // Check if we are at max speed
-            if (!(vehicleSpeed >= maxSpeed)) {
-                vehicleSpeed += acceleration;
+            if (!(v.speed >= v.maxSpeed)) {
+                v.speed += v.acceleration;
             }
             else {
-                vehicleSpeed = maxSpeed;
+                v.speed = v.maxSpeed;
             }
 
         }
         else {
-            vehicleSpeed -= acceleration;
-            if(vehicleSpeed <= 0) {
-                vehicleSpeed = 0;
+            v.speed -= v.acceleration;
+            if(v.speed <= 0) {
+                v.speed = 0;
             }
         }
         if(keys[K_DOWN]) {
-            if(vehicleSpeed <= 0) {
-                vehicleSpeed = -maxSpeed / 4;
+            if(v.speed <= 0) {
+                v.speed = -v.maxSpeed / 4;
             }
             else {
-                vehicleSpeed -= 5 * acceleration;
+                v.speed -= 5 * v.acceleration;
             }
         }
         if(keys[K_LEFT]) {
-            if (vehicleSpeed > 0) {
-                vRotation += 2.0f;
+            if (v.speed > 0) {
+                v.rotation += 2.0f;
                 if (keys[K_SPACE]) {
-                    vRotation += 3.0f;
+                    v.rotation += 3.0f;
                 }
             }
-            else if (vehicleSpeed < 0) {
-                vRotation -= 2.0f;
+            else if (v.speed < 0) {
+                v.rotation -= 2.0f;
             }
         }
         if(keys[K_RIGHT]) {
-            if (vehicleSpeed > 0) {
-                vRotation -= 2.0f;
+            if (v.speed > 0) {
+                v.rotation -= 2.0f;
                 if (keys[K_SPACE]) {
-                    vRotation -= 3.0f;
+                    v.rotation -= 3.0f;
                 }
             }
-            else if (vehicleSpeed < 0) {
-                vRotation += 2.0f;
+            else if (v.speed < 0) {
+                v.rotation += 2.0f;
             }
         }
 
         // Caculate the x and y component of the movement and move by speed
-        vehiclePos.x -= sin(glm::radians(vRotation)) * vehicleSpeed;
-        vehiclePos.y += cos(glm::radians(vRotation)) * vehicleSpeed;
+        v.position.x -= sin(glm::radians(v.rotation)) * v.speed;
+        v.position.y += cos(glm::radians(v.rotation)) * v.speed;
 
         // Clear the depth buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -646,26 +401,26 @@ int main(int argc, const char * argv[]) {
         if (cameraType == 0) {
 
             // Create the position matrix of the camera
-            glm::vec3 cameraPos = vehiclePos + cameraDistance;
+            glm::vec3 cameraPos = v.position + cameraDistance;
 
             // Calculate the camera direction
-            glm::vec3 cameraDirection = glm::normalize(cameraPos - vehiclePos);
+            glm::vec3 cameraDirection = glm::normalize(cameraPos - v.position);
             glm::vec3 cameraUp = glm::normalize(glm::cross(cameraDirection, cameraRight));
 
             // Create the view matrix
-            viewMatrix = glm::lookAt(cameraPos, vehiclePos, cameraUp);
+            viewMatrix = glm::lookAt(cameraPos, v.position, cameraUp);
         }
         else if (cameraType == 1) {
 
             // Create the position matrix of the camera
-            glm::vec3 cameraPos = vehiclePos + glm::vec3(sin(glm::radians(vRotation)) * 0.4f, -cos(glm::radians(vRotation)) * 0.4f, 0.3f);
+            glm::vec3 cameraPos = v.position + glm::vec3(sin(glm::radians(v.rotation)) * 0.4f, -cos(glm::radians(v.rotation)) * 0.4f, 0.3f);
 
             // Calculate the camera direction
-            glm::vec3 cameraDirection = glm::normalize(cameraPos - vehiclePos);
+            glm::vec3 cameraDirection = glm::normalize(cameraPos - v.position);
             glm::vec3 cameraUp = glm::normalize(glm::cross(cameraDirection, cameraRight));
 
             // Create the view matrix
-            viewMatrix = glm::lookAt(cameraPos, vehiclePos, cameraUp);
+            viewMatrix = glm::lookAt(cameraPos, v.position, cameraUp);
             //viewMatrix = glm::rotate(viewMatrix, glm::radians(vRotation), -cameraDirection);
         }
         else if (cameraType == 2) {
@@ -674,7 +429,7 @@ int main(int argc, const char * argv[]) {
             glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 1.3f);
 
             // Calculate the camera direction
-            glm::vec3 cameraDirection = glm::normalize(cameraPos - vehiclePos);
+            glm::vec3 cameraDirection = glm::normalize(cameraPos - v.position);
             glm::vec3 cameraUp = glm::normalize(glm::cross(cameraDirection, cameraRight));
 
             // Create the view matrix
@@ -686,7 +441,7 @@ int main(int argc, const char * argv[]) {
         drawPlane(ps, projectionMatrix, viewMatrix);
         
         // Draw the cube
-        drawVehicle(cs, projectionMatrix, viewMatrix, vRotation, vehiclePos);
+        v.draw(cs, projectionMatrix, viewMatrix);
 
         // Swap the buffer to render
         glfwSwapBuffers(window);
