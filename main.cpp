@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/ext.hpp>
 
 #include "shaders/shader.h"
 
@@ -35,6 +36,9 @@ const int K_RIGHT = 3;
 const int K_A = 4;
 const int K_D = 5;
 const int K_SPACE = 6;
+
+// Store the camera type to render with
+int cameraType;
 
 float planeVertices[] = {
      0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
@@ -297,6 +301,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
         keys[K_SPACE] = false;
     }
+    if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+        cameraType++;
+        if (cameraType > 2) {
+            cameraType = 0;
+        }
+    }
+    if (key == GLFW_KEY_C&& action == GLFW_RELEASE) {
+        
+    }
 
 }
 
@@ -407,64 +420,64 @@ void genTexture(GLuint tex, GLenum texLoc, Shader s, const GLchar* sLocation) {
 // Method to draw the world plane
 void drawPlane(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix) {
 
-        // Create the pointers to the uniform floats in the vertex shader
-        const GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
+    // Create the pointers to the uniform floats in the vertex shader
+    const GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
 
-        // Use the shader program
-        s.use();
+    // Use the shader program
+    s.use();
 
-        // Recalculate the model matrix
-        glm::mat4 modelMatrix;
+    // Recalculate the model matrix
+    glm::mat4 modelMatrix;
 
-        // Create the mvp matrix for the plane
-        glm::mat4 mvp;
-        mvp = projectionMatrix * viewMatrix * modelMatrix;
+    // Create the mvp matrix for the plane
+    glm::mat4 mvp;
+    mvp = projectionMatrix * viewMatrix * modelMatrix;
 
-        // Pass the data for the model, view and projection matrix to the shader
-        glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+    // Pass the data for the model, view and projection matrix to the shader
+    glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 
-        // Bind to the buffer to draw the plane
-        glBindVertexArray(pVAO);
+    // Bind to the buffer to draw the plane
+    glBindVertexArray(pVAO);
 
-        // Draw the triangle
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    // Draw the triangle
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        // Debind the buffer
-        glBindVertexArray(0);
+    // Debind the buffer
+    glBindVertexArray(0);
 
 }
 
 // Create a method to draw the cube
 void drawVehicle(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix, float rotation, glm::vec3 position) {
 
-        // Create the pointers to the uniform floats in the vertex shader
-        const GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
+    // Create the pointers to the uniform floats in the vertex shader
+    const GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
 
-        // Use the shader program
-        s.use();
+    // Use the shader program
+    s.use();
 
-        // Recalculate the model matrix
-        glm::mat4 modelMatrix;
-        modelMatrix = glm::translate(modelMatrix, position);
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.02f, 0.02f, 0.02f));
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.5f));
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+    // Recalculate the model matrix
+    glm::mat4 modelMatrix;
+    modelMatrix = glm::translate(modelMatrix, position);
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.02f, 0.02f, 0.02f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.5f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 
-        // Create the mvp matrix for the plane
-        glm::mat4 mvp;
-        mvp = projectionMatrix * viewMatrix * modelMatrix;
+    // Create the mvp matrix for the plane
+    glm::mat4 mvp;
+    mvp = projectionMatrix * viewMatrix * modelMatrix;
 
-        // Pass the data for the model, view and projection matrix to the shader
-        glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+    // Pass the data for the model, view and projection matrix to the shader
+    glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 
-        // Bind to the buffer to draw the plane
-        glBindVertexArray(cVAO);
+    // Bind to the buffer to draw the plane
+    glBindVertexArray(cVAO);
 
-        // Draw the triangle
-        glDrawArrays(GL_TRIANGLES, 0, 60);
+    // Draw the triangle
+    glDrawArrays(GL_TRIANGLES, 0, 60);
 
-        // Debind the buffer
-        glBindVertexArray(0);
+    // Debind the buffer
+    glBindVertexArray(0);
 
 }
 
@@ -553,11 +566,19 @@ int main(int argc, const char * argv[]) {
     // Create the position matrix of the camera
     glm::vec3 cameraDistance =  glm::vec3(0.0f, -0.4f, 0.3f);
 
+    // Create the position matrix of the camera
+    glm::vec3 cameraPos = vehiclePos + cameraDistance;
+
     // Define a vector that points up
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 cameraDirection = glm::normalize(cameraPos - vehiclePos);
+    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
 
     // Hold the rotation of the vehicle
     float vRotation = 0.0f;
+
+    // Set to the default camera
+    cameraType = 0;
 
     // Create the game loop to run until the window close button or esc is clicked
     while(!glfwWindowShouldClose(window)) {
@@ -589,19 +610,25 @@ int main(int argc, const char * argv[]) {
             }
         }
         if(keys[K_LEFT]) {
-            if (vehicleSpeed != 0) {
+            if (vehicleSpeed > 0) {
                 vRotation += 2.0f;
                 if (keys[K_SPACE]) {
                     vRotation += 3.0f;
                 }
             }
+            else if (vehicleSpeed < 0) {
+                vRotation -= 2.0f;
+            }
         }
         if(keys[K_RIGHT]) {
-            if (vehicleSpeed != 0) {
+            if (vehicleSpeed > 0) {
                 vRotation -= 2.0f;
                 if (keys[K_SPACE]) {
                     vRotation -= 3.0f;
                 }
+            }
+            else if (vehicleSpeed < 0) {
+                vRotation += 2.0f;
             }
         }
 
@@ -615,16 +642,45 @@ int main(int argc, const char * argv[]) {
         // Clear to background colour
         glClearBufferfv(GL_COLOR, 0, bg);
 
-        // Create the position matrix of the camera
-        glm::vec3 cameraPos = vehiclePos + cameraDistance;
+        // Check the camera type
+        if (cameraType == 0) {
 
-        // Calculate the camera direction
-        glm::vec3 cameraDirection = glm::normalize(cameraPos - vehiclePos);
-        glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-        glm::vec3 cameraUp = glm::normalize(glm::cross(cameraDirection, cameraRight));
+            // Create the position matrix of the camera
+            glm::vec3 cameraPos = vehiclePos + cameraDistance;
 
-        // Create the view matrix
-        viewMatrix = glm::lookAt(cameraPos, vehiclePos, cameraUp);
+            // Calculate the camera direction
+            glm::vec3 cameraDirection = glm::normalize(cameraPos - vehiclePos);
+            glm::vec3 cameraUp = glm::normalize(glm::cross(cameraDirection, cameraRight));
+
+            // Create the view matrix
+            viewMatrix = glm::lookAt(cameraPos, vehiclePos, cameraUp);
+        }
+        else if (cameraType == 1) {
+
+            // Create the position matrix of the camera
+            glm::vec3 cameraPos = vehiclePos + glm::vec3(sin(glm::radians(vRotation)) * 0.4f, -cos(glm::radians(vRotation)) * 0.4f, 0.3f);
+
+            // Calculate the camera direction
+            glm::vec3 cameraDirection = glm::normalize(cameraPos - vehiclePos);
+            glm::vec3 cameraUp = glm::normalize(glm::cross(cameraDirection, cameraRight));
+
+            // Create the view matrix
+            viewMatrix = glm::lookAt(cameraPos, vehiclePos, cameraUp);
+            //viewMatrix = glm::rotate(viewMatrix, glm::radians(vRotation), -cameraDirection);
+        }
+        else if (cameraType == 2) {
+
+            // Set the camera position
+            glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 1.3f);
+
+            // Calculate the camera direction
+            glm::vec3 cameraDirection = glm::normalize(cameraPos - vehiclePos);
+            glm::vec3 cameraUp = glm::normalize(glm::cross(cameraDirection, cameraRight));
+
+            // Create the view matrix
+            viewMatrix = glm::lookAt(cameraPos, glm::vec3(0.0f, 0.0f, 0.0f), cameraUp);
+
+        }
         
         // Draw the plane
         drawPlane(ps, projectionMatrix, viewMatrix);
