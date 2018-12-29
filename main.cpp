@@ -12,10 +12,8 @@
 #include <glm/ext.hpp>
 
 #include "shaders/shader.h"
+#include "shaders/textures.h"
 #include "vehicle.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 using namespace std;
 
@@ -176,47 +174,14 @@ void planeMesh() {
 
 }
 
-// Method to generate and bind a texture
-void genTexture(GLuint tex, GLenum texLoc, Shader s, const GLchar* sLocation) {
-
-    // Load the texture data
-    int width, height, nrChannels;
-    unsigned char* texData = stbi_load(sLocation, &width, &height, &nrChannels, 0);
-
-    // Check that the image data loaded successfully
-    if (texData) {
-
-        // Create the texture object
-        glGenTextures(1, &tex);
-
-        // Use the shader
-        s.use();
-
-        // Set the active texture
-        glActiveTexture(texLoc);
-
-        // Bind track tex as the currently active texture
-        glBindTexture(GL_TEXTURE_2D, tex);
-
-        // Generate the texture and mipmap
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        // Free the image data
-        stbi_image_free(texData);
-
-    }
-    else {
-        fprintf(stderr, "Failed to load texture...");
-    }
-
-}
-
 // Method to draw the world plane
 void drawPlane(Shader s, glm::mat4 projectionMatrix, glm::mat4 viewMatrix) {
 
     // Create the pointers to the uniform floats in the vertex shader
     const GLuint mvpLoc = glGetUniformLocation(s.program, "mvp");
+
+    // Set the texture
+    glUniform1i(glGetUniformLocation(s.program, "trackTex"), 0);
 
     // Use the shader program
     s.use();
@@ -293,20 +258,13 @@ int main(int argc, const char * argv[]) {
     stbi_set_flip_vertically_on_load(true);
 
     // Load the shaders
-    Shader ps("shaders/vertex.glsl", "shaders/planeFragment.glsl");
-    Shader cs("shaders/vertex.glsl", "shaders/carFragment.glsl");
+    Shader s("shaders/vertex.glsl", "shaders/planeFragment.glsl");
 
     // Variables to hold the textures
     GLuint trackTex;
-    GLuint carTex;
 
     // Generate the textures
-    genTexture(trackTex, GL_TEXTURE0,  ps, "assets/track.jpg");
-    genTexture(trackTex, GL_TEXTURE1,  cs, "assets/carRed.jpg");
-
-    // Set the textures in the shader program
-    ps.setInt("trackTex", 0);
-    cs.setInt("carTex", 1);
+    genTexture(trackTex, GL_TEXTURE0,  s, "assets/carRedWindows.jpg");
 
     // Generate the world plane
     planeMesh();
@@ -438,10 +396,10 @@ int main(int argc, const char * argv[]) {
         }
         
         // Draw the plane
-        drawPlane(ps, projectionMatrix, viewMatrix);
+        drawPlane(s, projectionMatrix, viewMatrix);
         
         // Draw the cube
-        v.draw(cs, projectionMatrix, viewMatrix);
+        v.draw(projectionMatrix, viewMatrix);
 
         // Swap the buffer to render
         glfwSwapBuffers(window);
@@ -458,8 +416,6 @@ int main(int argc, const char * argv[]) {
     glDeleteVertexArrays(1, &pVAO);
     glDeleteBuffers(1, &pVBO);
     glDeleteBuffers(1, &pEBO);
-    glDeleteVertexArrays(1, &cVAO);
-    glDeleteBuffers(1, &cVBO);
 
     // Destroy the program
     glDeleteProgram(program);

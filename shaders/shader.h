@@ -16,6 +16,10 @@ class Shader {
     // Store the ID of the shader program
     GLuint program;
 
+    Shader() {
+        //Do nothing
+    }
+
     // Constructor
     Shader(const GLchar* vPath, const GLchar* fPath) {
 
